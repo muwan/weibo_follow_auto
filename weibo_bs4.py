@@ -156,11 +156,11 @@ class Follow(object):
             else:
                 if self.follow_json["win_id"]:
                     user_id = self.follow_json["win_id"]
-                    user_list = list(collection.find({"_id": {"$gt": ObjectId(user_id)}}))
+                    user_list = list(collection.find({"_id": {"$gte": ObjectId(user_id)}}))
                     sys_user_list = user_list[::2]
                 else:
                     user_id = self.follow_json["mac_id"]
-                    user_list = list(collection.find({"_id": {"$gt": ObjectId(user_id)}}))
+                    user_list = list(collection.find({"_id": {"$gte": ObjectId(user_id)}}))
                     sys_user_list = user_list[1::2]
 
             for index, user in enumerate(sys_user_list):
