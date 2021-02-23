@@ -119,7 +119,7 @@ class Follow(object):
                     else:
                         status = False
                         self.repeat = True
-                        sleep_time = random.randint(100 * 60, 120 * 60)
+                        sleep_time = random.randint(0.1 * 60, 0.5 * 60)
                         print("现在时间: %s , 休息时间 : %s 小时 %s 分 %s 秒" % (
                             time.strftime("%H:%M:%S", time.localtime()), int(sleep_time / 3600),
                             int((sleep_time % 3600) / 60), (sleep_time % 3600) % 60))
