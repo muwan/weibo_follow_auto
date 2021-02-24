@@ -56,7 +56,9 @@ class Follow(object):
         browser = await launch({'headless': True,
                                 'userDataDir': './userData',
                                 'args': [
-                                    '--disable-infobars', f'--window-size={WINDOW_WIDTH},{WINDOW_HEIGHT}'
+                                    '--disable-infobars',
+                                    f'--window-size={WINDOW_WIDTH},{WINDOW_HEIGHT}',
+                                    '--no-sandbox'
                                 ]})
         page = await browser.newPage()
         return page
