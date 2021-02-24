@@ -105,9 +105,9 @@ class Follow(object):
                         input_text = yzm_res.get("pic_str")
                         if input_text and error_no == 0:
                             self.repeat = False
-                            await web_page.type("input[action-type='yzm_input']", input_text)
-                            submit_btn = await web_page.querySelector("[action-type='yzm_submit']")
                             await asyncio.sleep(1)
+                            await web_page.type("input[action-type='yzm_input']", input_text, {"delay": 2})
+                            submit_btn = await web_page.querySelector("[action-type='yzm_submit']")
                             await submit_btn.click()
                             await asyncio.sleep(1)
                             yzm_frame_new = await web_page.querySelector('div.layer_verification')
