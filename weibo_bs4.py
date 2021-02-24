@@ -53,7 +53,7 @@ class Follow(object):
 
 
     async def web_brownser(self) -> Page:
-        browser = await launch({'headless': False,
+        browser = await launch({'headless': True,
                                 'userDataDir': './userData',
                                 'args': [
                                     '--disable-infobars', f'--window-size={WINDOW_WIDTH},{WINDOW_HEIGHT}'
