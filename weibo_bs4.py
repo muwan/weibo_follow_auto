@@ -20,6 +20,7 @@ from pyppeteer.page import Page
 from pyppeteer.errors import TimeoutError
 from bson.objectid import ObjectId
 from chaoying import Chaojiying_Client
+from pathlib import Path
 
 from weibo_follow import MONGO_CONNECTION_STRING
 from weibo_follow import collection
@@ -53,10 +54,13 @@ class Follow(object):
 
 
     async def web_brownser(self) -> Page:
+        p = Path("./userData").resolve()
         browser = await launch({'headless': True,
-                                'userDataDir': './userData',
+                                'userDataDir': p,
                                 'args': [
-                                    '--disable-infobars', f'--window-size={WINDOW_WIDTH},{WINDOW_HEIGHT}'
+                                    '--disable-infobars',
+                                    f'--window-size={WINDOW_WIDTH},{WINDOW_HEIGHT}',
+                                    '--no-sandbox'
                                 ]})
         page = await browser.newPage()
         return page
