@@ -111,7 +111,7 @@ class Follow(object):
                             if yzm_frame_new:
                                 self.cjy.ReportError(pic_id)
                                 print("现在时间: %s , 验证码未通过" % (time.strftime("%H:%M:%S", time.localtime())))
-                                png_name = f"{time.strftime('%Y%m%d%H:%M:%S', time.localtime())}.png"
+                                png_name = f"{time.strftime('%Y%m%d%H%M%S', time.localtime())}.png"
                                 await web_page.screenshot({'path': f'./errImg/{png_name}'})
                                 status = False
                             else:
@@ -170,7 +170,7 @@ class Follow(object):
                 status = await self.run_browser(user["uri"], page)
                 self.real_count = self.real_count + 1 if status else self.real_count
                 print("已经关注 %s 人,当前时间：%s" % (self.real_count, time.strftime("%H:%M:%S", time.localtime())))
-                if self.real_count > 1:
+                if self.real_count > 500:
                     break
         finally:
             print("ok 今天的关注结束啦")
