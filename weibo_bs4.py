@@ -105,11 +105,11 @@ class Follow(object):
                         input_text = yzm_res.get("pic_str")
                         if input_text and error_no == 0:
                             self.repeat = False
-                            await asyncio.sleep(1)
                             await web_page.type("input[action-type='yzm_input']", input_text, {"delay": 2})
+                            await asyncio.sleep(1)
                             submit_btn = await web_page.querySelector("[action-type='yzm_submit']")
                             await submit_btn.click()
-                            await asyncio.sleep(1)
+                            await asyncio.sleep(random.randint(1, 3))
                             yzm_frame_new = await web_page.querySelector('div.layer_verification')
                             status = True
                             if yzm_frame_new:
@@ -123,7 +123,7 @@ class Follow(object):
                     else:
                         status = False
                         self.repeat = True
-                        sleep_time = random.randint(60 * 60, 120 * 60)
+                        sleep_time = random.randint(90 * 60, 120 * 60)
                         print("现在时间: %s , 休息时间 : %s 小时 %s 分 %s 秒" % (
                             time.strftime("%H:%M:%S", time.localtime()), int(sleep_time / 3600),
                             int((sleep_time % 3600) / 60), (sleep_time % 3600) % 60))
@@ -133,11 +133,9 @@ class Follow(object):
                     status = True
                     self.repeat = False
             else:
-                self.repeat = False
                 print("pass followed")
             return status
         else:
-            self.repeat = False
             print("skip female")
             status = False
             return status
