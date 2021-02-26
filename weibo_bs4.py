@@ -55,7 +55,7 @@ class Follow(object):
 
     async def web_brownser(self) -> Page:
         p = Path("./userData").resolve()
-        browser = await launch({'headless': True,
+        browser = await launch({'headless': False,
                                 'userDataDir': p,
                                 'args': [
                                     '--disable-infobars',
@@ -105,8 +105,8 @@ class Follow(object):
                         input_text = yzm_res.get("pic_str")
                         if input_text and error_no == 0:
                             self.repeat = False
-                            await asyncio.sleep(1)
                             await web_page.type("input[action-type='yzm_input']", input_text, {"delay": 2})
+                            await asyncio.sleep(1)
                             submit_btn = await web_page.querySelector("[action-type='yzm_submit']")
                             await submit_btn.click()
                             await asyncio.sleep(1)
