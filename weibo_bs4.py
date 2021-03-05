@@ -56,7 +56,7 @@ class Follow(object):
 
     async def web_brownser(self) -> Page:
         p = Path("./userData").resolve()
-        browser = await launch({'headless': True,
+        browser = await launch({'headless': False,
                                 'userDataDir': p,
                                 'args': [
                                     '--disable-infobars',
