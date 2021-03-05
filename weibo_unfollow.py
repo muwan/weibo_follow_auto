@@ -11,6 +11,7 @@ import sys
 import asyncio
 # import requests
 import pymongo
+from pathlib import Path
 
 from time import sleep
 import time
@@ -34,12 +35,14 @@ class Follow(object):
 
     async def web_brownser(self):
         # global browser, apage
+        p = Path("./userData").resolve()
         browser = await launch({'headless': True,
-                                'userDataDir': './userData',
+                                'userDataDir': p,
                                 'userGesture': True,
                                 'args': [
                                     '--disable-infobars',
-                                    f'--window-size={WINDOW_WIDTH},{WINDOW_HEIGHT}'
+                                    f'--window-size={WINDOW_WIDTH},{WINDOW_HEIGHT}',
+                                    '--no-sandbox'
                                 ]})
         apage = await browser.newPage()
         return apage
@@ -103,7 +106,7 @@ class Follow(object):
        page = await self.web_brownser()
        try:
             #                               {"_id": {"$gt": ObjectId("5ff480232d896ec165b8464c")}}
-            userList = list(collection.find({"_id": {"$gt": ObjectId("5ff480232d896ec165b8464c"), "$lt": ObjectId("5ff482b02d896ec165b852eb")}}))
+            userList = list(collection.find({"_id": {"$gt": ObjectId("5ff48b902d896ec165b881c3"), "$lt": ObjectId("5ff48b902d896ec165b881c5")}}))
             lastObject = userList[-1]
             print(lastObject["_id"])
             # 本次启动已经关注人数
