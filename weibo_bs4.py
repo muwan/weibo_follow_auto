@@ -56,7 +56,7 @@ class Follow(object):
 
     async def web_brownser(self) -> Page:
         p = Path("./userData").resolve()
-        browser = await launch({'headless': False,
+        browser = await launch({'headless': True,
                                 'userDataDir': p,
                                 'args': [
                                     '--disable-infobars',
@@ -155,7 +155,7 @@ class Follow(object):
             user_id = None
             sys_user_list = []
 
-            if sys.platform == "darwin":
+            if sys.platform != "darwin":
                 if self.follow_json["mac_id"]:
                     user_id = self.follow_json["mac_id"]
                     user_list = list(collection.find({"_id": {"$gte": ObjectId(user_id)}}))
@@ -187,7 +187,7 @@ class Follow(object):
             print("ok 今天的关注结束啦")
 
     def write_to_txt(self):
-        if sys.platform == "darwin":
+        if sys.platform != "darwin":
             self.follow_json["mac_id"] = self.last_follow
         else:
             self.follow_json["win_id"] = self.last_follow
