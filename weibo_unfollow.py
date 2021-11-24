@@ -49,10 +49,10 @@ class Follow(object):
         apage = await browser.newPage()
         return apage
 
-    async def web_page(self, url, selecter, page: Page) -> Page:
+    async def web_page(self, url, selecter, page: Page):
         try:
             await page.setViewport({'width': WINDOW_WIDTH, 'height': WINDOW_HEIGHT})
-            await page.evaluateOnNewDocument('Object.defineProperty(navigator, "webdriver", {get: () => undefined})')
+            # await page.evaluateOnNewDocument('Object.defineProperty(navigator, "webdriver", {get: () => undefined})')
             await page.goto(url, options={"timeout": 1000 * 60})
             await asyncio.wait(
                 [
@@ -60,9 +60,11 @@ class Follow(object):
                     page.waitForSelector(selecter, options={"timeout": 1000 * 30})
                 ]
             )
+            return page
 
-        except TimeoutError:
+        except:
             print('timeout error')
+            return None
 
     async def run_browser(self, uri, page: Page) -> Page:
         status = False
@@ -108,7 +110,7 @@ class Follow(object):
         page = await self.web_brownser()
         try:
             #                               {"_id": {"$gt": ObjectId("5ff48b902d896ec165b881c3"), "$lt": ObjectId("5ff496bc2d896ec165b8bd19")}}
-            userList = list(collection.find({"_id": {"$lte": ObjectId("5ff481ae2d896ec165b84ec7")}}).sort("_id",-1))
+            userList = list(collection.find({"_id": {"$lte": ObjectId("5ff481ae2d896ec165b84ec7")}}).sort("_id", -1))
             lastObject = userList[-1]
             print(lastObject["_id"])
             # 本次启动已经关注人数ß
@@ -128,33 +130,121 @@ class Follow(object):
             pass
 
     async def start_a_page(self):
-        url = "https://weibo.com/p/1005051764018647/myfollow?gid=4620402435822182&expand=1#place"
+        group_list = ["4680381133492558", "4682554790382754", "4686168904697800",
+                      "4686168942182617", "4686169016631390", "4686169054642690",
+                      "4686169240240869", "4686169272483997", "4686169314690317",
+                      "4686169353487163", "4686169390712648", "4694652555625594",
+                      "4694652588393188"]
         page: Page = await self.web_brownser()
-        await self.web_page(url, ".WB_frame", page)
-        await asyncio.sleep(3)
-        pages = await page.JJ("[bpfilter='page'].S_txt1.page")
-        last_page = await page.evaluate('element => element.innerText', pages[-2])
 
-        for _ in range(0 , int(last_page)):
-            await asyncio.sleep(4)
-            await page.querySelectorEval(".btn_link.S_txt1", "(element) => element.click()")
-            await asyncio.sleep(1)
-            elements = await page.JJ(".member_li")
-            for li in elements:
-                await li.click()
-            await asyncio.sleep(1)
-            cancel_btn = await page.J('.W_btn_a[node-type="cancelFollowBtn"')
-            await cancel_btn.click()
-            await asyncio.sleep(2)
-            sure = await page.J('[node-type="ok"]')
-            await asyncio.sleep(3)
-            await sure.click()
-
+        for group_id in group_list:
+            initall_page = 1
+            # print("当前到页面id %s" % group_id)
+            # url = f"https://weibo.com/p/1005051764018647/myfollow?t=1&cfs=&Pl_Official_RelationMyfollow__88_page=1#Pl_Official_RelationMyfollow__88"
+            url = f"https://weibo.com/p/1005051764018647/myfollow?t=1&gid={group_id}&cfs=&Pl_Official_RelationMyfollow__89_page={initall_page}#Pl_Official_RelationMyfollow__89"
+            print("url ", url)
+            await self.web_page(url, ".WB_frame", page)
             await asyncio.sleep(10)
-            curpages = await page.JJ("[bpfilter='page'].S_txt1.page")
-            cust = await page.evaluate('element => element.innerText', curpages[-2])
-            print("当前还剩%s页" % cust)
+            pages = await page.JJ("[bpfilter='page'].S_txt1.page")
+            last_page = 1
+            if len(pages) > 1:
+                last_page = await page.evaluate('element => element.innerText', pages[-2])
+                await asyncio.sleep(1)
+            for _ in range(0, int(last_page)):
+                # next_url = f"https://weibo.com/p/1005051764018647/myfollow?t=1&ignoreg=1&cfs=&Pl_Official_RelationMyfollow__88_page={initall_page}#Pl_Official_RelationMyfollow__88"
+                next_url = f"https://weibo.com/p/1005051764018647/myfollow?t=1&gid={group_id}&cfs=&Pl_Official_RelationMyfollow__88_page={initall_page}#Pl_Official_RelationMyfollow__88"
+                print("next_url ", next_url)
+                next_page = await self.web_page(next_url, ".WB_frame", page)
+                if next_page:
+                    await asyncio.sleep(2)
+                    await next_page.querySelectorEval(".btn_link.S_txt1", "(element) => element.click()")
+                    await asyncio.sleep(1)
+                    elements = await next_page.JJ(".member_li")
+                    selected_count = 0
+                    for li in elements:
+                        # 如果未关注，才会勾选
+                        status = await li.Jeval("span.S_txt1", "li => li.innerText")
+                        if status != "互相关注":
+                            await li.click()
+                            selected_count += 1
+                    await asyncio.sleep(1)
 
+                    if selected_count > 0:
+                        cancel_btn = await next_page.J('.W_btn_a[node-type="cancelFollowBtn"')
+                        await cancel_btn.click()
+                        await asyncio.sleep(1)
+                        sure = await next_page.J('[node-type="ok"]')
+                        await asyncio.sleep(1)
+                        await sure.click()
+                        print("取消关注 %s 人" % selected_count)
+                        await asyncio.sleep(5)
+                    else:
+                        print("当前页没有选中的")
+
+                    curpages = await next_page.JJ("[bpfilter='page'].S_txt1.page")
+                    for each in curpages:
+                        cust = await next_page.evaluate('element => element.innerText', each)
+                        print(cust)
+                    initall_page += 1
+
+# 移动到一个分组
+    async def start_move_page(self):
+        group_list = ["4680381133492558", "4682554790382754", "4686168904697800",
+                      "4686168942182617", "4686169016631390", "4686169054642690",
+                      "4686169240240869", "4686169272483997", "4686169314690317",
+                      "4686169353487163", "4686169390712648", "4694652555625594",
+                      "4694652588393188"]
+        page: Page = await self.web_brownser()
+
+        for group_id in group_list:
+            initall_page = 1
+            # print("当前到页面id %s" % group_id)
+            # url = f"https://weibo.com/p/1005051764018647/myfollow?t=1&cfs=&Pl_Official_RelationMyfollow__88_page=1#Pl_Official_RelationMyfollow__88"
+            url = f"https://weibo.com/p/1005051764018647/myfollow?t=1&gid={group_id}&cfs=&Pl_Official_RelationMyfollow__89_page={initall_page}#Pl_Official_RelationMyfollow__89"
+            print("url ", url)
+            await self.web_page(url, ".WB_frame", page)
+            await asyncio.sleep(10)
+            pages = await page.JJ("[bpfilter='page'].S_txt1.page")
+            last_page = 1
+            if len(pages) > 1:
+                last_page = await page.evaluate('element => element.innerText', pages[-2])
+                await asyncio.sleep(1)
+            for _ in range(0, int(last_page)):
+                # next_url = f"https://weibo.com/p/1005051764018647/myfollow?t=1&ignoreg=1&cfs=&Pl_Official_RelationMyfollow__88_page={initall_page}#Pl_Official_RelationMyfollow__88"
+                next_url = f"https://weibo.com/p/1005051764018647/myfollow?t=1&gid={group_id}&cfs=&Pl_Official_RelationMyfollow__88_page={initall_page}#Pl_Official_RelationMyfollow__88"
+                print("next_url ", next_url)
+                next_page = await self.web_page(next_url, ".WB_frame", page)
+                if next_page:
+                    await asyncio.sleep(2)
+                    await next_page.querySelectorEval(".btn_link.S_txt1", "(element) => element.click()")
+                    await asyncio.sleep(1)
+                    elements = await next_page.JJ(".member_li")
+                    selected_count = 0
+                    for li in elements:
+                        # 如果未关注，才会勾选
+                        status = await li.Jeval("span.S_txt1", "li => li.innerText")
+                        if status == "互相关注":
+                            await li.click()
+                            selected_count += 1
+                    await asyncio.sleep(1)
+
+                    if selected_count > 0:
+                        move_btn = await next_page.J('.W_btn_a[node-type="addToOtherGroupBtn"')
+                        await move_btn.click()
+                        await asyncio.sleep(1)
+                        label_sure = await next_page.J("[for='4686168971283766']")
+                        await asyncio.sleep(1)
+                        await label_sure.click()
+                        print("移走 %s 人" % selected_count)
+                        await asyncio.sleep(5)
+                    else:
+                        print("当前页没有选中的")
+
+                    curpages = await next_page.JJ("[bpfilter='page'].S_txt1.page")
+                    for each in curpages:
+                        cust = await next_page.evaluate('element => element.innerText', each)
+                        print(cust)
+                    initall_page += 1
 
 if __name__ == '__main__':
     password = '214500o'
@@ -162,5 +252,6 @@ if __name__ == '__main__':
     login = Follow(account, password)
     # login.run_weibo()
     # asyncio.get_event_loop().run_until_complete(login.start_a_page())
-    asyncio.get_event_loop().run_until_complete(login.pyppeteer_get())
+    asyncio.get_event_loop().run_until_complete(login.start_move_page())
 
+    # asyncio.get_event_loop().run_until_complete(login.pyppeteer_get())
